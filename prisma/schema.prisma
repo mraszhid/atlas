@@ -1,0 +1,488 @@
+// ATLAS Health Identity Platform - Database Schema
+// Patient-owned, globally portable health records
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./atlas.db"
+}
+
+// ============ USERS & AUTHENTICATION ============
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  role          String    // PATIENT, CLINICIAN, INSURER, CLINIC_ADMIN, CLINIC_STAFF
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  patient       Patient?
+  clinician     Clinician?
+  insurer       Insurer?
+  clinicStaff   ClinicStaff?
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// ============ PATIENT DOMAIN ============
+
+model Patient {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id])
+  
+  // Identity
+  fullName            String
+  dateOfBirth         DateTime
+  nationality         String
+  passportNumber      String?
+  bloodType           String?
+  visaId              String?
+  phone               String?
+  photoUrl            String?
+  preferredLanguage   String    @default("en")
+  
+  // Emergency Code for quick access
+  emergencyCode       String    @unique
+  emergencyLocked     Boolean   @default(false)
+  emergencyPasscode   String?
+  
+  // Advance Directives
+  organDonor          Boolean   @default(false)
+  advanceDirective    String?   // DNR preferences text
+  decisionMakerName   String?
+  decisionMakerPhone  String?
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  emergencyContacts   EmergencyContact[]
+  allergies           Allergy[]
+  medications         Medication[]
+  conditions          Condition[]
+  surgeries           Surgery[]
+  vaccinations        Vaccination[]
+  labResults          LabResult[]
+  documents           Document[]
+  insurance           Insurance[]
+  primaryPhysician    PrimaryPhysician?
+  sharingPermissions  SharingPermission[]
+  consentLinks        ConsentLink[]
+  auditLogs           AuditLog[]
+  intakeSubmissions   IntakeSubmission[]
+  clinicPatients      ClinicPatient[]
+  emrImports          EmrImport[]
+  verifications       Verification[]
+}
+
+model EmergencyContact {
+  id            String   @id @default(uuid())
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  name          String
+  relationship  String
+  phone         String
+  createdAt     DateTime @default(now())
+}
+
+// ============ HEALTH WALLET RECORDS ============
+
+model Allergy {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  allergen      String
+  reaction      String?
+  severity      String?   // mild, moderate, severe
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  locked        Boolean   @default(false)
+  source        String    @default("PATIENT") // PATIENT, EMR_IMPORT, CLINICIAN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Medication {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  name          String
+  dosage        String?
+  frequency     String?
+  prescribedFor String?
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  locked        Boolean   @default(false)
+  source        String    @default("PATIENT")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Condition {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  name          String
+  diagnosedDate DateTime?
+  notes         String?
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  locked        Boolean   @default(false)
+  source        String    @default("PATIENT")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Surgery {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  procedure     String
+  date          DateTime?
+  hospital      String?
+  notes         String?
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  locked        Boolean   @default(false)
+  source        String    @default("PATIENT")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Vaccination {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  name          String
+  date          DateTime?
+  provider      String?
+  lotNumber     String?
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  source        String    @default("PATIENT")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model LabResult {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  testName      String
+  result        String?
+  unit          String?
+  referenceRange String?
+  date          DateTime?
+  provider      String?
+  verified      Boolean   @default(false)
+  verifiedById  String?
+  source        String    @default("PATIENT")
+  createdAt     DateTime  @default(now())
+}
+
+model PrimaryPhysician {
+  id            String   @id @default(uuid())
+  patientId     String   @unique
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  name          String
+  specialty     String?
+  clinic        String?
+  phone         String?
+  email         String?
+  country       String?
+  createdAt     DateTime @default(now())
+}
+
+// ============ DOCUMENT VAULT ============
+
+model Document {
+  id                  String    @id @default(uuid())
+  patientId           String
+  patient             Patient   @relation(fields: [patientId], references: [id])
+  title               String
+  type                String    // labs, imaging, discharge_summary, operative_notes, consult_letter, prescription, vaccination_record, other
+  date                DateTime?
+  provider            String?
+  facility            String?
+  country             String?
+  tags                String?   // comma-separated
+  notes               String?
+  fileName            String
+  fileSize            Int?
+  mimeType            String?
+  
+  // Sharing flags
+  shareEmergency      Boolean   @default(false)
+  shareClinicVisit    Boolean   @default(true)
+  isPrivate           Boolean   @default(false)
+  
+  // Mock file data (base64 or path)
+  fileData            String?
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  intakeAttachments   IntakeAttachment[]
+}
+
+// ============ INSURANCE ============
+
+model Insurance {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  providerName    String
+  policyNumber    String
+  groupNumber     String?
+  coverageStart   DateTime?
+  coverageEnd     DateTime?
+  emergencyPhone  String?
+  planType        String?
+  isActive        Boolean   @default(true)
+  verifiedAt      DateTime?
+  verifiedById    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ============ SHARING & CONSENT ============
+
+model SharingPermission {
+  id              String   @id @default(uuid())
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  
+  // Category toggles for different share modes
+  shareMode       String   // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
+  
+  allergies       Boolean  @default(true)
+  medications     Boolean  @default(true)
+  conditions      Boolean  @default(true)
+  surgeries       Boolean  @default(true)
+  vaccinations    Boolean  @default(false)
+  labResults      Boolean  @default(false)
+  documents       Boolean  @default(false)
+  insurance       Boolean  @default(false)
+  advanceDirective Boolean @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([patientId, shareMode])
+}
+
+model ConsentLink {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  token           String    @unique
+  shareMode       String    // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
+  duration        Int       // minutes
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  accessedCount   Int       @default(0)
+  createdAt       DateTime  @default(now())
+}
+
+// ============ CLINICIAN DOMAIN ============
+
+model Clinician {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  fullName        String
+  licenseNumber   String
+  specialty       String?
+  institution     String?
+  country         String?
+  createdAt       DateTime  @default(now())
+  
+  verifications   Verification[]
+}
+
+model Verification {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  clinicianId     String
+  clinician       Clinician @relation(fields: [clinicianId], references: [id])
+  
+  category        String    // allergies, medications, conditions, surgeries
+  itemIds         String    // comma-separated IDs of verified items
+  signature       String    // clinician's digital signature (name + license)
+  institution     String?
+  verifiedAt      DateTime  @default(now())
+  notes           String?
+}
+
+// ============ INSURER DOMAIN ============
+
+model Insurer {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  companyName     String
+  agentName       String?
+  createdAt       DateTime  @default(now())
+}
+
+// ============ MEDICAL TOURISM CLINIC DOMAIN ============
+
+model Clinic {
+  id              String    @id @default(uuid())
+  name            String
+  country         String
+  city            String?
+  address         String?
+  phone           String?
+  email           String?
+  specialty       String?   // Cosmetic, Orthopedic, Fertility, General
+  logoUrl         String?
+  createdAt       DateTime  @default(now())
+  
+  staff           ClinicStaff[]
+  intakeForms     IntakeForm[]
+  clinicPatients  ClinicPatient[]
+}
+
+model ClinicStaff {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  clinicId        String
+  clinic          Clinic    @relation(fields: [clinicId], references: [id])
+  fullName        String
+  role            String    // ADMIN, STAFF
+  createdAt       DateTime  @default(now())
+  
+  clinicNotes     ClinicNote[]
+}
+
+// ============ INTAKE FORMS (No-Code Builder) ============
+
+model IntakeForm {
+  id              String    @id @default(uuid())
+  clinicId        String
+  clinic          Clinic    @relation(fields: [clinicId], references: [id])
+  name            String
+  description     String?
+  template        String?   // template category name
+  sections        String    // JSON array of form sections
+  isPublished     Boolean   @default(false)
+  shareToken      String?   @unique
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  submissions     IntakeSubmission[]
+}
+
+model IntakeSubmission {
+  id              String    @id @default(uuid())
+  formId          String
+  form            IntakeForm @relation(fields: [formId], references: [id])
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  
+  answers         String    // JSON object of answers
+  consentToken    String    @unique
+  consentDuration Int       // minutes
+  consentExpiresAt DateTime
+  consentRevokedAt DateTime?
+  submittedAt     DateTime  @default(now())
+  
+  attachments     IntakeAttachment[]
+}
+
+model IntakeAttachment {
+  id              String    @id @default(uuid())
+  submissionId    String
+  submission      IntakeSubmission @relation(fields: [submissionId], references: [id])
+  documentId      String
+  document        Document  @relation(fields: [documentId], references: [id])
+  createdAt       DateTime  @default(now())
+}
+
+// ============ CLINIC PATIENT VIEW ============
+
+model ClinicPatient {
+  id              String    @id @default(uuid())
+  clinicId        String
+  clinic          Clinic    @relation(fields: [clinicId], references: [id])
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  intakeCode      String?
+  importedAt      DateTime  @default(now())
+  status          String    @default("IMPORTED") // IMPORTED, REVIEWED, SCHEDULED, COMPLETED
+  
+  notes           ClinicNote[]
+  
+  @@unique([clinicId, patientId])
+}
+
+model ClinicNote {
+  id              String    @id @default(uuid())
+  clinicPatientId String
+  clinicPatient   ClinicPatient @relation(fields: [clinicPatientId], references: [id])
+  staffId         String
+  staff           ClinicStaff @relation(fields: [staffId], references: [id])
+  content         String
+  createdAt       DateTime  @default(now())
+}
+
+// ============ EMR INTEGRATION ============
+
+model EmrImport {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  emrProvider     String    // Epic, Cerner, mock hospital name
+  importedAt      DateTime  @default(now())
+  resourceType    String    // Patient, MedicationStatement, AllergyIntolerance, Observation
+  fhirData        String    // JSON of FHIR resource
+  status          String    @default("SUCCESS")
+}
+
+// ============ AUDIT LOGGING ============
+
+model AuditLog {
+  id              String    @id @default(uuid())
+  patientId       String
+  patient         Patient   @relation(fields: [patientId], references: [id])
+  
+  actorType       String    // PATIENT, CLINICIAN, INSURER, CLINIC_STAFF, EMERGENCY_ACCESS, SYSTEM
+  actorId         String?
+  actorName       String?
+  actorInstitution String?
+  
+  action          String    // VIEW, VERIFY, DOWNLOAD, IMPORT, OVERRIDE, REVOKE, SUBMIT_INTAKE, etc.
+  category        String?   // allergies, medications, documents, etc.
+  itemId          String?
+  documentTitle   String?
+  
+  consentType     String?   // NORMAL, EMERGENCY, EMERGENCY_OVERRIDE, MEDICAL_TOURISM
+  consentToken    String?
+  
+  ipAddress       String?
+  userAgent       String?
+  
+  metadata        String?   // JSON for extra details
+  createdAt       DateTime  @default(now())
+}
