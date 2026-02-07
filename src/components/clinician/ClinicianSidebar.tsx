@@ -10,7 +10,6 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Stethoscope,
   Brain
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -59,11 +58,9 @@ export default function ClinicianSidebar({ clinician }: { clinician?: ClinicianD
       {/* Logo */}
       <div className="sidebar-logo">
         <Link href="/clinician/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-white" />
-          </div>
+          <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
           <div>
-            <span className="text-xl font-bold text-white tracking-tight">Atlas</span>
+            <span className="text-xl font-bold text-white tracking-tight">ATLAS</span>
             <span className="text-xs text-slate-400 block -mt-1">Clinician Portal</span>
           </div>
         </Link>

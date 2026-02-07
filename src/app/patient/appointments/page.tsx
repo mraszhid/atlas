@@ -116,7 +116,7 @@ const calendarEvents: CalendarEvent[] = [
   { day: 5, month: 2, year: 2026, color: 'blue', appointmentId: 'upcoming-3' },
 ]
 
-function MiniCalendar({ onDateClick }: { onDateClick: (appointmentId: string) => void }) {
+function MiniCalendar({ onDateClick, selectedId }: { onDateClick: (appointmentId: string) => void; selectedId?: string }) {
   const [currentMonth, setCurrentMonth] = useState(1) // February = 1 (0-indexed)
   const [currentYear, setCurrentYear] = useState(2026)
 
@@ -150,43 +150,49 @@ function MiniCalendar({ onDateClick }: { onDateClick: (appointmentId: string) =>
     )
   }
 
+  // Find appointment label for tooltip
+  const getEventLabel = (event: CalendarEvent) => {
+    const all = [...upcomingAppointments, ...pastAppointments]
+    return all.find((a) => a.id === event.appointmentId)?.title ?? ''
+  }
+
   return (
-    <div className="card-premium p-6">
+    <div className="card-premium p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-semibold text-slate-900">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-slate-900">
           {MONTH_NAMES[currentMonth]} {currentYear}
         </h3>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={prevMonth}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={nextMonth}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Day Names */}
-      <div className="grid grid-cols-7 gap-0 mb-2">
-        {DAY_NAMES.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-slate-400 py-2">
+      <div className="grid grid-cols-7 gap-0 mb-1">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+          <div key={i} className="text-center text-[10px] font-medium text-slate-400 py-1">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-0">
+      <div className="grid grid-cols-7 gap-0.5">
         {/* Empty cells for days before the 1st */}
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-          <div key={`empty-${i}`} className="aspect-square" />
+          <div key={`empty-${i}`} className="h-8" />
         ))}
 
         {/* Days */}
@@ -195,57 +201,48 @@ function MiniCalendar({ onDateClick }: { onDateClick: (appointmentId: string) =>
           const events = getEventsForDay(day)
           const hasEvents = events.length > 0
           const isToday = isCurrentMonth && day === todayDate
+          const isSelected = hasEvents && events.some((e) => e.appointmentId === selectedId)
+          const eventColor = hasEvents ? events[0].color : null
 
           return (
             <button
               key={day}
+              title={hasEvents ? getEventLabel(events[0]) : undefined}
               onClick={() => {
                 if (hasEvents) {
                   onDateClick(events[0].appointmentId)
                 }
               }}
-              className={`aspect-square flex flex-col items-center justify-center rounded-lg relative transition-colors ${
+              className={`h-8 w-full flex items-center justify-center rounded-md text-xs relative transition-all ${
                 hasEvents
-                  ? 'cursor-pointer hover:bg-slate-50'
-                  : 'cursor-default'
-              } ${isToday ? 'bg-atlas-50' : ''}`}
+                  ? `cursor-pointer font-semibold ${
+                      isSelected
+                        ? eventColor === 'blue'
+                          ? 'bg-atlas-500 text-white shadow-sm shadow-atlas-200'
+                          : 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
+                        : eventColor === 'blue'
+                          ? 'bg-atlas-50 text-atlas-700 hover:bg-atlas-100 ring-1 ring-atlas-200'
+                          : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 ring-1 ring-emerald-200'
+                    }`
+                  : isToday
+                    ? 'font-bold text-atlas-600 bg-atlas-50/50'
+                    : 'text-slate-500 cursor-default'
+              }`}
             >
-              <span
-                className={`text-sm ${
-                  isToday
-                    ? 'font-bold text-atlas-600'
-                    : hasEvents
-                      ? 'font-medium text-slate-900'
-                      : 'text-slate-500'
-                }`}
-              >
-                {day}
-              </span>
-              {hasEvents && (
-                <div className="flex gap-0.5 mt-0.5">
-                  {events.map((event, idx) => (
-                    <span
-                      key={idx}
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        event.color === 'blue' ? 'bg-atlas-500' : 'bg-emerald-500'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              {day}
             </button>
           )
         })}
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          <span className="w-2 h-2 rounded-full bg-atlas-500" />
-          Intake Interview
+      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span className="w-2 h-2 rounded-sm bg-atlas-500" />
+          Intake
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span className="w-2 h-2 rounded-sm bg-emerald-500" />
           Procedure
         </div>
       </div>
@@ -353,9 +350,11 @@ function AppointmentIcon({ type, past }: { type: Appointment['type']; past?: boo
 // ============================================================
 
 export default function AppointmentsPage() {
+  const [selectedId, setSelectedId] = useState<string | undefined>()
   const appointmentRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const scrollToAppointment = (id: string) => {
+    setSelectedId(id)
     const el = appointmentRefs.current[id]
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -367,7 +366,7 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto">
+    <div className="p-6 lg:p-10 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -381,128 +380,136 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="mb-10">
-        <MiniCalendar onDateClick={scrollToAppointment} />
-      </div>
-
-      {/* Upcoming Appointments */}
-      <div className="mb-10">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-atlas-500" />
-          Upcoming Appointments
-        </h2>
-        <div className="space-y-4">
-          {upcomingAppointments.map((appt) => (
-            <div
-              key={appt.id}
-              ref={(el) => { appointmentRefs.current[appt.id] = el }}
-              className="card-premium p-6 transition-all duration-300"
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <AppointmentIcon type={appt.type} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1 flex-wrap">
-                      <h3 className="font-semibold text-slate-900">{appt.title}</h3>
-                      <StatusBadge status={appt.status} />
-                    </div>
-                    <p className="text-sm text-slate-600 mb-2">{appt.clinicName}</p>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {appt.displayDate}
-                      </span>
-                      {appt.displayTime && (
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          {appt.displayTime}
-                        </span>
-                      )}
-                      {appt.location && (
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {appt.location}
-                        </span>
-                      )}
-                    </div>
-                    {appt.surgeon && (
-                      <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
-                        <UserRound className="w-3.5 h-3.5" />
-                        Surgeon: {appt.surgeon}
-                      </p>
-                    )}
-                    {appt.intakeStatus && (
-                      <div className="mt-2">
-                        <IntakeStatusBadge status={appt.intakeStatus} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex-shrink-0">
-                  {appt.type === 'intake' ? (
-                    <Link
-                      href={`/patient/appointments/interview/${appt.id}`}
-                      className="btn-primary btn-lg gap-2"
-                    >
-                      <Play className="w-4 h-4" />
-                      Join Interview
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/patient/appointments/interview/${appt.id}`}
-                      className="btn-secondary gap-2"
-                    >
-                      View Details
-                      <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Main layout: Calendar sidebar + Appointments */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-10">
+        {/* Calendar — compact sidebar */}
+        <div className="lg:w-64 flex-shrink-0">
+          <div className="lg:sticky lg:top-6">
+            <MiniCalendar onDateClick={scrollToAppointment} selectedId={selectedId} />
+          </div>
         </div>
-      </div>
 
-      {/* Past Appointments */}
-      <div className="mb-10">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-          Past Appointments
-        </h2>
-        <div className="space-y-4">
-          {pastAppointments.map((appt) => (
-            <div key={appt.id} className="card-premium p-6 opacity-80">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <AppointmentIcon type={appt.type} past />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1 flex-wrap">
-                      <h3 className="font-semibold text-slate-900">{appt.title}</h3>
-                      <StatusBadge status={appt.status} />
+        {/* Appointments list */}
+        <div className="flex-1 min-w-0 space-y-8">
+          {/* Upcoming Appointments */}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-atlas-500" />
+              Upcoming Appointments
+            </h2>
+            <div className="space-y-4">
+              {upcomingAppointments.map((appt) => (
+                <div
+                  key={appt.id}
+                  ref={(el) => { appointmentRefs.current[appt.id] = el }}
+                  className="card-premium p-5 transition-all duration-300"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <AppointmentIcon type={appt.type} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1 flex-wrap">
+                          <h3 className="font-semibold text-slate-900">{appt.title}</h3>
+                          <StatusBadge status={appt.status} />
+                        </div>
+                        <p className="text-sm text-slate-600 mb-2">{appt.clinicName}</p>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {appt.displayDate}
+                          </span>
+                          {appt.displayTime && (
+                            <span className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5" />
+                              {appt.displayTime}
+                            </span>
+                          )}
+                          {appt.location && (
+                            <span className="flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5" />
+                              {appt.location}
+                            </span>
+                          )}
+                        </div>
+                        {appt.surgeon && (
+                          <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
+                            <UserRound className="w-3.5 h-3.5" />
+                            Surgeon: {appt.surgeon}
+                          </p>
+                        )}
+                        {appt.intakeStatus && (
+                          <div className="mt-2">
+                            <IntakeStatusBadge status={appt.intakeStatus} />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-600 mb-2">{appt.clinicName}</p>
-                    <div className="flex items-center gap-4 text-sm text-slate-500">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {appt.displayDate}
-                      </span>
-                      {appt.intakeStatus && (
-                        <IntakeStatusBadge status={appt.intakeStatus} />
+                    <div className="flex-shrink-0">
+                      {appt.type === 'intake' ? (
+                        <Link
+                          href={`/patient/appointments/interview/${appt.id}`}
+                          className="btn-primary btn-lg gap-2"
+                        >
+                          <Play className="w-4 h-4" />
+                          Join Interview
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/patient/appointments/interview/${appt.id}`}
+                          className="btn-secondary gap-2"
+                        >
+                          View Details
+                          <ChevronRight className="w-4 h-4" />
+                        </Link>
                       )}
                     </div>
                   </div>
                 </div>
-                <Link
-                  href={`/patient/appointments/summary/${appt.id}`}
-                  className="btn-secondary gap-2 flex-shrink-0"
-                >
-                  <FileText className="w-4 h-4" />
-                  View Summary
-                </Link>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Past Appointments */}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              Past Appointments
+            </h2>
+            <div className="space-y-4">
+              {pastAppointments.map((appt) => (
+                <div key={appt.id} className="card-premium p-5 opacity-80">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <AppointmentIcon type={appt.type} past />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1 flex-wrap">
+                          <h3 className="font-semibold text-slate-900">{appt.title}</h3>
+                          <StatusBadge status={appt.status} />
+                        </div>
+                        <p className="text-sm text-slate-600 mb-2">{appt.clinicName}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {appt.displayDate}
+                          </span>
+                          {appt.intakeStatus && (
+                            <IntakeStatusBadge status={appt.intakeStatus} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/patient/appointments/summary/${appt.id}`}
+                      className="btn-secondary gap-2 flex-shrink-0"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Summary
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

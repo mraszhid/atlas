@@ -12,7 +12,6 @@ import {
   GitBranch,
   BarChart3,
   Settings,
-  Shield,
   Menu,
   X,
   LogOut,
@@ -60,9 +59,7 @@ export default function ClinicLayout({
         {/* Logo */}
         <div className="sidebar-logo">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
+            <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
             <div>
               <span className="text-lg font-bold text-white tracking-tight">ATLAS</span>
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/30">
@@ -150,9 +147,7 @@ export default function ClinicLayout({
             <Menu className="w-5 h-5 text-slate-700" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
+            <img src="/atlas-logo.png" alt="ATLAS" className="w-8 h-8 flex-shrink-0" />
             <span className="font-bold text-slate-900">ATLAS</span>
             <span className="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded">
               Clinic

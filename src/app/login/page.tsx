@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Globe, Eye, EyeOff, ArrowRight, AlertCircle, Loader2, Heart, Building2, Activity, BadgeCheck } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, AlertCircle, Loader2, Heart, Building2, Activity, BadgeCheck, Shield } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -44,6 +44,9 @@ export default function LoginPage() {
           break
         case 'CLINICIAN':
           router.push('/clinician/dashboard')
+          break
+        case 'INSURER':
+          router.push('/insurer/dashboard')
           break
         case 'CLINIC_ADMIN':
         case 'CLINIC_STAFF':
@@ -120,9 +123,7 @@ export default function LoginPage() {
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16">
           <Link href="/" className="flex items-center gap-3 mb-12 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
+            <img src="/atlas-logo.png" alt="ATLAS" className="w-12 h-12 flex-shrink-0 group-hover:scale-105 transition-transform" />
             <span className="text-2xl font-bold text-white tracking-tight">ATLAS</span>
           </Link>
 
@@ -166,9 +167,7 @@ export default function LoginPage() {
         <div className={`relative z-10 w-full max-w-md transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           {/* Mobile Logo */}
           <Link href="/" className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center">
-              <Globe className="w-5 h-5 text-white" />
-            </div>
+            <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
             <span className="text-xl font-bold text-white tracking-tight">ATLAS</span>
           </Link>
 
@@ -255,11 +254,12 @@ export default function LoginPage() {
             <p className="text-xs text-gray-500 text-center mb-4">
               Password: <code className="px-1.5 py-0.5 bg-white/10 rounded text-violet-300 font-mono">demo123</code>
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { role: 'Patient', email: 'patient@demo.atlas', icon: <Heart className="w-4 h-4" />, color: 'bg-violet-500/10 border-violet-500/20 text-violet-400' },
                 { role: 'Clinician', email: 'clinician@demo.atlas', icon: <Activity className="w-4 h-4" />, color: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
                 { role: 'Clinic', email: 'clinic@demo.atlas', icon: <Building2 className="w-4 h-4" />, color: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' },
+                { role: 'Insurer', email: 'insurer@demo.atlas', icon: <Shield className="w-4 h-4" />, color: 'bg-amber-500/10 border-amber-500/20 text-amber-400' },
               ].map((account) => (
                 <button
                   key={account.role}

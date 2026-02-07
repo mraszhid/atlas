@@ -10,7 +10,6 @@ import {
   CreditCard,
   Calendar,
   Share2,
-  Shield,
   Heart,
   History,
   Settings,
@@ -74,11 +73,9 @@ export default function PatientSidebar({ patient }: { patient?: PatientData | nu
       {/* Logo */}
       <div className="sidebar-logo">
         <Link href="/patient/dashboard" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
+          <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
           <div>
-            <span className="text-xl font-bold text-white tracking-tight">Atlas</span>
+            <span className="text-xl font-bold text-white tracking-tight">ATLAS</span>
             <div className="flex items-center gap-2 -mt-1">
               <span className="text-xs text-slate-400">Health Identity</span>
               <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-sky-500/20 text-sky-400 rounded">Patient</span>

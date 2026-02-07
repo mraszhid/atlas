@@ -2,9 +2,8 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
-import { 
-  Globe, 
-  Building2, 
+import {
+  Building2,
   CheckCircle2, 
   AlertCircle,
   Upload,
@@ -175,9 +174,7 @@ export default function IntakePage({ params }: { params: Promise<{ token: string
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-atlas-500 to-medical-500 flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
+              <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
               <div>
                 <span className="text-xl font-display font-bold text-clinical-900">ATLAS</span>
                 <span className="block text-xs text-clinical-500">Medical Tourism Intake</span>

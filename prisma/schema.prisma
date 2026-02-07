@@ -16,12 +16,13 @@ model User {
   id            String    @id @default(uuid())
   email         String    @unique
   passwordHash  String
-  role          String    // PATIENT, CLINICIAN, CLINIC_ADMIN, CLINIC_STAFF, HEALTHCARE_DELEGATE
+  role          String    // PATIENT, CLINICIAN, CLINIC_ADMIN, CLINIC_STAFF, HEALTHCARE_DELEGATE, INSURER
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
   patient            Patient?
   clinician          Clinician?
+  insurer            Insurer?
   clinicStaff        ClinicStaff?
   healthcareDelegate HealthcareDecisionMaker[]
   sessions           Session[]
@@ -263,6 +264,17 @@ model Insurance {
   updatedAt       DateTime  @updatedAt
 }
 
+// ============ INSURER DOMAIN ============
+
+model Insurer {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  companyName String
+  agentName   String?
+  createdAt   DateTime @default(now())
+}
+
 // ============ SHARING & CONSENT ============
 
 model SharingPermission {
@@ -271,8 +283,8 @@ model SharingPermission {
   patient         Patient  @relation(fields: [patientId], references: [id])
   
   // Category toggles for different share modes
-  shareMode       String   // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM
-  
+  shareMode       String   // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
+
   allergies       Boolean  @default(true)
   medications     Boolean  @default(true)
   conditions      Boolean  @default(true)
@@ -294,7 +306,7 @@ model ConsentLink {
   patientId       String
   patient         Patient   @relation(fields: [patientId], references: [id])
   token           String    @unique
-  shareMode       String    // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM
+  shareMode       String    // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
   duration        Int       // minutes
   expiresAt       DateTime
   revokedAt       DateTime?
@@ -474,7 +486,7 @@ model AuditLog {
   patientId       String
   patient         Patient   @relation(fields: [patientId], references: [id])
   
-  actorType       String    // PATIENT, CLINICIAN, CLINIC_STAFF, EMERGENCY_ACCESS, SYSTEM
+  actorType       String    // PATIENT, CLINICIAN, CLINIC_STAFF, INSURER, EMERGENCY_ACCESS, SYSTEM
   actorId         String?
   actorName       String?
   actorInstitution String?

@@ -289,10 +289,8 @@ export default function HomePage() {
         <nav className={`relative z-50 px-6 py-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between px-6 py-3 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-white" />
-                </div>
+              <div className="flex items-center gap-2.5">
+                <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
                 <span className="text-xl font-bold tracking-tight">ATLAS</span>
               </div>
 
@@ -472,7 +470,7 @@ export default function HomePage() {
           ref={forWho.ref}
           className={`max-w-7xl mx-auto transition-all duration-700 ${forWho.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             <div className="bg-white/[0.03] rounded-2xl border border-white/10 p-8 lg:p-10 hover:bg-white/[0.05] hover:border-white/15 transition-all">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
@@ -530,6 +528,36 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-500 transition-colors"
               >
                 Create Free Account <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="bg-white/[0.03] rounded-2xl border border-white/10 p-8 lg:p-10 hover:bg-white/[0.05] hover:border-white/15 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-amber-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">For Insurers</h3>
+              </div>
+              <ul className="space-y-4 mb-8">
+                {[
+                  'AI-powered pre-authorization decisions',
+                  'Instant patient identity & coverage verification',
+                  'Claims processing dashboard',
+                  'Access audit trail for compliance',
+                  'Real-time eligibility checks',
+                  'Fraud detection & risk scoring',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-500 transition-colors"
+              >
+                Explore Insurer Portal <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -650,7 +678,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 role: 'Patient',
@@ -675,6 +703,14 @@ export default function HomePage() {
                 icon: <BadgeCheck className="w-6 h-6" />,
                 iconColor: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
                 btnColor: 'from-emerald-500 to-emerald-600',
+              },
+              {
+                role: 'Insurer',
+                email: 'insurer@demo.atlas',
+                desc: 'Verify patient identities, process claims, and use AI pre-authorization for instant coverage decisions.',
+                icon: <Shield className="w-6 h-6" />,
+                iconColor: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+                btnColor: 'from-amber-500 to-amber-600',
               },
             ].map((account, i) => (
               <div
@@ -705,10 +741,8 @@ export default function HomePage() {
       <footer className="bg-[#0a0720] text-white px-6 py-16 border-t border-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-700 flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
+            <div className="flex items-center gap-2.5">
+              <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
               <span className="text-xl font-bold tracking-tight">ATLAS</span>
             </div>
 

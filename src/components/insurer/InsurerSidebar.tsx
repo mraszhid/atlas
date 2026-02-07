@@ -5,8 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Users,
-  FileText,
-  Download,
+  FileCheck,
+  Search,
   History,
   Settings,
   LogOut,
@@ -15,13 +15,12 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface ClinicData {
-  name: string
-  staffRole?: string | null
-  staffName?: string | null
+interface InsurerData {
+  companyName: string
+  contactName?: string | null
 }
 
-export default function ClinicSidebar({ clinic }: { clinic?: ClinicData | null }) {
+export default function InsurerSidebar({ insurer }: { insurer?: InsurerData | null }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -29,28 +28,22 @@ export default function ClinicSidebar({ clinic }: { clinic?: ClinicData | null }
     { 
       section: 'Overview',
       items: [
-        { href: '/clinic/dashboard', label: 'Dashboard', icon: LayoutDashboard, iconClass: 'icon-dashboard' },
+        { href: '/insurer/dashboard', label: 'Dashboard', icon: LayoutDashboard, iconClass: 'icon-dashboard' },
       ]
     },
     {
-      section: 'Patient Management',
+      section: 'Verification',
       items: [
-        { href: '/clinic/patients', label: 'Patients', icon: Users, iconClass: 'icon-patients' },
-        { href: '/clinic/import', label: 'Import Patient', icon: Download, iconClass: 'icon-emr' },
-      ]
-    },
-    {
-      section: 'Forms',
-      items: [
-        { href: '/clinic/forms', label: 'Intake Forms', icon: FileText, iconClass: 'icon-forms' },
-        { href: '/clinic/ai-intake', label: 'AI Smart Intake', icon: Brain, iconClass: 'icon-ai' },
+        { href: '/insurer/verify', label: 'Verify Patient', icon: Search, iconClass: 'icon-patients' },
+        { href: '/insurer/claims', label: 'Claims', icon: FileCheck, iconClass: 'icon-verify' },
+        { href: '/insurer/preauth', label: 'AI Pre-Auth', icon: Brain, iconClass: 'icon-ai' },
       ]
     },
     {
       section: 'Account',
       items: [
-        { href: '/clinic/history', label: 'Access History', icon: History, iconClass: 'icon-history' },
-        { href: '/clinic/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
+        { href: '/insurer/history', label: 'Access History', icon: History, iconClass: 'icon-history' },
+        { href: '/insurer/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
       ]
     },
   ]
@@ -64,11 +57,11 @@ export default function ClinicSidebar({ clinic }: { clinic?: ClinicData | null }
     <aside className="sidebar-premium overflow-y-auto pb-24">
       {/* Logo */}
       <div className="sidebar-logo">
-        <Link href="/clinic/dashboard" className="flex items-center gap-3">
+        <Link href="/insurer/dashboard" className="flex items-center gap-3">
           <img src="/atlas-logo.png" alt="ATLAS" className="w-10 h-10 flex-shrink-0" />
           <div>
             <span className="text-xl font-bold text-white tracking-tight">ATLAS</span>
-            <span className="text-xs text-slate-400 block -mt-1">Clinic Portal</span>
+            <span className="text-xs text-slate-400 block -mt-1">Insurer Portal</span>
           </div>
         </Link>
       </div>
@@ -96,29 +89,22 @@ export default function ClinicSidebar({ clinic }: { clinic?: ClinicData | null }
         ))}
       </nav>
 
-      {/* Clinic Card */}
+      {/* User Card */}
       <div className="sidebar-user">
         <div className="sidebar-user-card" onClick={handleLogout}>
-          <div className="sidebar-user-avatar bg-gradient-to-br from-violet-400 to-purple-500">
-            {clinic?.name?.charAt(0) || 'C'}
+          <div className="sidebar-user-avatar bg-gradient-to-br from-amber-400 to-orange-500">
+            {insurer?.companyName?.charAt(0) || 'I'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">
-              {clinic?.staffName || 'Staff Member'}
+              {insurer?.contactName || 'Insurance Agent'}
             </p>
             <p className="text-xs text-slate-400 truncate">
-              {clinic?.name || 'Medical Clinic'}
+              {insurer?.companyName || 'Insurance Company'}
             </p>
           </div>
           <LogOut className="w-4 h-4 text-slate-400" />
         </div>
-        
-        {clinic?.staffRole && (
-          <div className="mt-3 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
-            <p className="text-xs text-violet-400 font-medium">Role</p>
-            <p className="text-sm text-white">{clinic.staffRole}</p>
-          </div>
-        )}
       </div>
     </aside>
   )

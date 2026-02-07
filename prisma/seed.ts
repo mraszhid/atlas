@@ -41,6 +41,7 @@ async function main() {
   await prisma.clinicStaff.deleteMany()
   await prisma.clinic.deleteMany()
   await prisma.healthcareDecisionMaker.deleteMany()
+  await prisma.insurer.deleteMany()
   await prisma.clinician.deleteMany()
   await prisma.patient.deleteMany()
   await prisma.user.deleteMany()
@@ -182,6 +183,7 @@ async function main() {
       { patientId: patient.id, shareMode: 'EMERGENCY', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: false, labResults: false, documents: false, insurance: false, advanceDirective: true },
       { patientId: patient.id, shareMode: 'CLINIC_VISIT', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: true, labResults: true, documents: true, insurance: true, advanceDirective: true },
       { patientId: patient.id, shareMode: 'MEDICAL_TOURISM', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: true, labResults: true, documents: true, insurance: true, advanceDirective: true },
+      { patientId: patient.id, shareMode: 'INSURANCE', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: false, labResults: true, documents: false, insurance: true, advanceDirective: false },
     ],
   })
 
@@ -372,6 +374,21 @@ async function main() {
     },
   })
 
+  // ============ CREATE INSURER ============
+  console.log('🛡️ Creating insurer...')
+
+  const insurerUser = await prisma.user.create({
+    data: { email: 'insurer@demo.atlas', passwordHash, role: 'INSURER' },
+  })
+
+  await prisma.insurer.create({
+    data: {
+      userId: insurerUser.id,
+      companyName: 'GlobalTravel Insurance',
+      agentName: 'James Wilson',
+    },
+  })
+
   // ============ CREATE ADDITIONAL PATIENTS ============
   console.log('👥 Creating additional patients...')
 
@@ -536,6 +553,7 @@ async function main() {
   console.log('Clinician:    clinician@demo.atlas / demo123')
   console.log('Clinic Admin: clinic@demo.atlas / demo123')
   console.log('Clinic Staff: staff@demo.atlas / demo123')
+  console.log('Insurer:      insurer@demo.atlas / demo123')
   console.log('─────────────────────────────────────')
   console.log('')
   console.log(`🆔 Patient Emergency Code: ${patient.emergencyCode}`)
