@@ -9,15 +9,15 @@ export default async function PatientLayout({
   children: React.ReactNode
 }) {
   const session = await getSession()
-  
+
   if (!session || session.role !== 'PATIENT') {
     redirect('/login')
   }
-  
+
   const patient = await prisma.patient.findUnique({
     where: { userId: session.id },
   })
-  
+
   if (!patient) {
     redirect('/login')
   }
@@ -25,7 +25,7 @@ export default async function PatientLayout({
   return (
     <div className="min-h-screen bg-slate-50">
       <PatientSidebar patient={patient} />
-      <main className="main-content">
+      <main className="lg:ml-72 min-h-screen" style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)' }}>
         {children}
       </main>
     </div>

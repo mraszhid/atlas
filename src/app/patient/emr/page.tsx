@@ -7,11 +7,10 @@ import {
   AlertCircle,
   Building2,
   ArrowRight,
-  Download,
   RefreshCw,
   Shield
 } from 'lucide-react'
-import { cn, formatDateTime } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 
 const emrProviders = [
   { id: 'epic', name: 'Epic MyChart', logo: '🏥', description: 'Connect to Epic MyChart' },
@@ -66,42 +65,36 @@ export default function EMRConnectPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-clinical-900 mb-2">
-          EMR Connect
+          Medical Records
         </h1>
         <p className="text-clinical-500">
-          Import your medical records from connected health systems
+          View medical records imported from your healthcare providers
         </p>
       </div>
 
-      {/* FHIR Info */}
-      <div className="atlas-card p-4 mb-6 bg-medical-50 border-medical-200">
+      {/* Clinic Import Banner */}
+      <div className="atlas-card p-4 mb-6 bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-medical-600 flex-shrink-0 mt-0.5" />
+          <Building2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-medical-800">FHIR-Compatible Import</p>
-            <p className="text-sm text-medical-600 mt-1">
-              ATLAS uses HL7 FHIR standards to securely import your medical records from participating 
-              healthcare providers. Your data is encrypted in transit and at rest.
+            <p className="font-medium text-blue-800">Your clinic imports your medical records automatically</p>
+            <p className="text-sm text-blue-600 mt-1">
+              When you visit a participating clinic, they securely import your records using HL7 FHIR standards.
+              View your imported data below. Your data is encrypted in transit and at rest.
             </p>
           </div>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Provider Selection */}
+        {/* Connected Providers */}
         <div className="atlas-card p-6">
-          <h2 className="text-lg font-semibold text-clinical-900 mb-4">Select EMR Provider</h2>
+          <h2 className="text-lg font-semibold text-clinical-900 mb-4">Connected Providers</h2>
           <div className="space-y-3">
             {emrProviders.map((provider) => (
-              <button
+              <div
                 key={provider.id}
-                onClick={() => setSelectedProvider(provider.id)}
-                className={cn(
-                  'w-full flex items-center gap-4 p-4 rounded-lg border-2 transition-colors text-left',
-                  selectedProvider === provider.id
-                    ? 'border-atlas-500 bg-atlas-50'
-                    : 'border-clinical-200 hover:border-clinical-300'
-                )}
+                className="w-full flex items-center gap-4 p-4 rounded-lg border-2 border-clinical-200 text-left"
               >
                 <div className="w-12 h-12 rounded-xl bg-clinical-100 flex items-center justify-center text-2xl">
                   {provider.logo}
@@ -110,10 +103,8 @@ export default function EMRConnectPage() {
                   <p className="font-medium text-clinical-900">{provider.name}</p>
                   <p className="text-sm text-clinical-500">{provider.description}</p>
                 </div>
-                {selectedProvider === provider.id && (
-                  <CheckCircle2 className="w-5 h-5 text-atlas-600" />
-                )}
-              </button>
+                <span className="text-xs text-clinical-400 font-medium">Available</span>
+              </div>
             ))}
           </div>
 
@@ -125,12 +116,12 @@ export default function EMRConnectPage() {
             {importing ? (
               <>
                 <RefreshCw className="w-5 h-5 animate-spin" />
-                Importing Records...
+                Refreshing Records...
               </>
             ) : (
               <>
-                <Download className="w-5 h-5" />
-                Import from EMR
+                <RefreshCw className="w-5 h-5" />
+                Refresh Imported Records
               </>
             )}
           </button>
@@ -180,9 +171,9 @@ export default function EMRConnectPage() {
             <div className="atlas-card p-6">
               <div className="text-center py-8">
                 <Plug className="w-16 h-16 text-clinical-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-clinical-700 mb-2">No Recent Imports</h3>
+                <h3 className="text-lg font-medium text-clinical-700 mb-2">No Imported Records Yet</h3>
                 <p className="text-clinical-500 text-sm">
-                  Select an EMR provider and click import to sync your records
+                  Records will appear here after your clinic imports them during your visit
                 </p>
               </div>
             </div>
@@ -190,31 +181,31 @@ export default function EMRConnectPage() {
 
           {/* How It Works */}
           <div className="atlas-card p-6 mt-6">
-            <h3 className="font-semibold text-clinical-900 mb-4">How FHIR Import Works</h3>
+            <h3 className="font-semibold text-clinical-900 mb-4">How Record Import Works</h3>
             <div className="space-y-4 text-sm text-clinical-600">
               <div className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-atlas-100 text-atlas-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">
                   1
                 </div>
-                <p>ATLAS connects to your healthcare provider using FHIR APIs</p>
+                <p>Your clinic connects to your healthcare provider using FHIR APIs</p>
               </div>
               <div className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-atlas-100 text-atlas-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">
                   2
                 </div>
-                <p>Your records are fetched as standardized FHIR resources</p>
+                <p>Records are fetched as standardized FHIR resources during your visit</p>
               </div>
               <div className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-atlas-100 text-atlas-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">
                   3
                 </div>
-                <p>Data is mapped to your Atlas Health Wallet categories</p>
+                <p>Data is mapped to your Atlas Health Wallet categories automatically</p>
               </div>
               <div className="flex gap-3">
                 <div className="w-6 h-6 rounded-full bg-atlas-100 text-atlas-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">
                   4
                 </div>
-                <p>Imported records are marked with "Source: EMR Import (FHIR)"</p>
+                <p>Imported records appear here marked with "Source: EMR Import (FHIR)"</p>
               </div>
             </div>
           </div>
