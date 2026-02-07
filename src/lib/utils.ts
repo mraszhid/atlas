@@ -178,10 +178,6 @@ export const shareModeLabels: Record<string, { label: string; description: strin
     label: 'Medical Tourism Intake',
     description: 'Full pre-visit documentation for international clinics',
   },
-  INSURANCE: {
-    label: 'Insurance Verification',
-    description: 'Identity and coverage verification only',
-  },
 }
 
 // Consent duration options

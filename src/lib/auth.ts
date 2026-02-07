@@ -3,7 +3,7 @@ import prisma from './prisma'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 
-export type UserRole = 'PATIENT' | 'CLINICIAN' | 'INSURER' | 'CLINIC_ADMIN' | 'CLINIC_STAFF'
+export type UserRole = 'PATIENT' | 'CLINICIAN' | 'CLINIC_ADMIN' | 'CLINIC_STAFF' | 'HEALTHCARE_DELEGATE'
 
 export interface SessionUser {
   id: string
@@ -11,7 +11,6 @@ export interface SessionUser {
   role: UserRole
   patientId?: string
   clinicianId?: string
-  insurerId?: string
   clinicStaffId?: string
   clinicId?: string
   name?: string
@@ -75,7 +74,6 @@ export async function getSession(): Promise<SessionUser | null> {
       include: {
         patient: true,
         clinician: true,
-        insurer: true,
         clinicStaff: {
           include: { clinic: true }
         },
@@ -97,10 +95,6 @@ export async function getSession(): Promise<SessionUser | null> {
     if (user.clinician) {
       sessionUser.clinicianId = user.clinician.id
       sessionUser.name = user.clinician.fullName
-    }
-    if (user.insurer) {
-      sessionUser.insurerId = user.insurer.id
-      sessionUser.name = user.insurer.companyName
     }
     if (user.clinicStaff) {
       sessionUser.clinicStaffId = user.clinicStaff.id

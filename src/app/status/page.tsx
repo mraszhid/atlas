@@ -446,7 +446,6 @@ If pages show "Loading..." forever:
                   <p className="text-sm text-emerald-700">Patient: patient@demo.atlas / demo123</p>
                   <p className="text-sm text-emerald-700">Clinician: clinician@demo.atlas / demo123</p>
                   <p className="text-sm text-emerald-700">Clinic: clinic@demo.atlas / demo123</p>
-                  <p className="text-sm text-emerald-700">Insurer: insurer@demo.atlas / demo123</p>
                 </div>
               </div>
             </div>

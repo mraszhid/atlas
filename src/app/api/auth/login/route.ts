@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
       include: {
         patient: true,
         clinician: true,
-        insurer: true,
         clinicStaff: true,
       },
     })

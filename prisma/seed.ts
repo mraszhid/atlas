@@ -40,7 +40,7 @@ async function main() {
   await prisma.emergencyContact.deleteMany()
   await prisma.clinicStaff.deleteMany()
   await prisma.clinic.deleteMany()
-  await prisma.insurer.deleteMany()
+  await prisma.healthcareDecisionMaker.deleteMany()
   await prisma.clinician.deleteMany()
   await prisma.patient.deleteMany()
   await prisma.user.deleteMany()
@@ -182,7 +182,6 @@ async function main() {
       { patientId: patient.id, shareMode: 'EMERGENCY', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: false, labResults: false, documents: false, insurance: false, advanceDirective: true },
       { patientId: patient.id, shareMode: 'CLINIC_VISIT', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: true, labResults: true, documents: true, insurance: true, advanceDirective: true },
       { patientId: patient.id, shareMode: 'MEDICAL_TOURISM', allergies: true, medications: true, conditions: true, surgeries: true, vaccinations: true, labResults: true, documents: true, insurance: true, advanceDirective: true },
-      { patientId: patient.id, shareMode: 'INSURANCE', allergies: false, medications: false, conditions: false, surgeries: false, vaccinations: false, labResults: false, documents: false, insurance: true, advanceDirective: false },
     ],
   })
 
@@ -217,21 +216,6 @@ async function main() {
       signature: 'Dr. Maria Rivera, MD - DHA-PHY-2019-8574',
       institution: "St. Mary's Medical Center, Dublin",
       notes: 'Verified during clinic visit. Patient records consistent with medical history.',
-    },
-  })
-
-  // ============ CREATE INSURER ============
-  console.log('🏢 Creating insurer...')
-  
-  const insurerUser = await prisma.user.create({
-    data: { email: 'insurer@demo.atlas', passwordHash, role: 'INSURER' },
-  })
-
-  await prisma.insurer.create({
-    data: {
-      userId: insurerUser.id,
-      companyName: 'GlobalTravel Insurance',
-      agentName: 'James Wilson',
     },
   })
 
@@ -432,7 +416,7 @@ async function main() {
     ],
   })
 
-  // Patient 3 - James Wilson (different from insurer agent)
+  // Patient 3 - James Anderson
   const patient3User = await prisma.user.create({
     data: { email: 'james@demo.atlas', passwordHash, role: 'PATIENT' },
   })
@@ -519,7 +503,7 @@ async function main() {
       { clinicId: clinic.id, patientId: patient.id, status: 'ACTIVE' },
       { clinicId: clinic.id, patientId: patient2.id, status: 'ACTIVE' },
       { clinicId: clinic.id, patientId: patient3.id, status: 'COMPLETED' },
-      { clinicId: clinic.id, patientId: patient4.id, status: 'PENDING' },
+      { clinicId: clinic.id, patientId: patient4.id, status: 'IMPORTED' },
     ],
   })
 
@@ -550,7 +534,6 @@ async function main() {
   console.log('─────────────────────────────────────')
   console.log('Patient:      patient@demo.atlas / demo123')
   console.log('Clinician:    clinician@demo.atlas / demo123')
-  console.log('Insurer:      insurer@demo.atlas / demo123')
   console.log('Clinic Admin: clinic@demo.atlas / demo123')
   console.log('Clinic Staff: staff@demo.atlas / demo123')
   console.log('─────────────────────────────────────')

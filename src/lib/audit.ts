@@ -15,16 +15,15 @@ export type AuditAction =
   | 'UPDATE'
   | 'CREATE'
 
-export type ConsentType = 
+export type ConsentType =
   | 'NORMAL'
   | 'EMERGENCY'
   | 'EMERGENCY_OVERRIDE'
   | 'MEDICAL_TOURISM'
-  | 'INSURANCE'
 
 interface AuditLogParams {
   patientId: string
-  actorType: 'PATIENT' | 'CLINICIAN' | 'INSURER' | 'CLINIC_STAFF' | 'EMERGENCY_ACCESS' | 'SYSTEM'
+  actorType: 'PATIENT' | 'CLINICIAN' | 'CLINIC_STAFF' | 'EMERGENCY_ACCESS' | 'SYSTEM'
   actorId?: string
   actorName?: string
   actorInstitution?: string

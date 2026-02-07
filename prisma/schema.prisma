@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // ============ USERS & AUTHENTICATION ============
@@ -16,15 +16,15 @@ model User {
   id            String    @id @default(uuid())
   email         String    @unique
   passwordHash  String
-  role          String    // PATIENT, CLINICIAN, INSURER, CLINIC_ADMIN, CLINIC_STAFF
+  role          String    // PATIENT, CLINICIAN, CLINIC_ADMIN, CLINIC_STAFF, HEALTHCARE_DELEGATE
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
-  patient       Patient?
-  clinician     Clinician?
-  insurer       Insurer?
-  clinicStaff   ClinicStaff?
-  sessions      Session[]
+  patient            Patient?
+  clinician          Clinician?
+  clinicStaff        ClinicStaff?
+  healthcareDelegate HealthcareDecisionMaker[]
+  sessions           Session[]
 }
 
 model Session {
@@ -85,6 +85,7 @@ model Patient {
   clinicPatients      ClinicPatient[]
   emrImports          EmrImport[]
   verifications       Verification[]
+  delegates           HealthcareDecisionMaker[]
 }
 
 model EmergencyContact {
@@ -270,7 +271,7 @@ model SharingPermission {
   patient         Patient  @relation(fields: [patientId], references: [id])
   
   // Category toggles for different share modes
-  shareMode       String   // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
+  shareMode       String   // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM
   
   allergies       Boolean  @default(true)
   medications     Boolean  @default(true)
@@ -293,7 +294,7 @@ model ConsentLink {
   patientId       String
   patient         Patient   @relation(fields: [patientId], references: [id])
   token           String    @unique
-  shareMode       String    // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM, INSURANCE
+  shareMode       String    // EMERGENCY, CLINIC_VISIT, MEDICAL_TOURISM
   duration        Int       // minutes
   expiresAt       DateTime
   revokedAt       DateTime?
@@ -332,15 +333,21 @@ model Verification {
   notes           String?
 }
 
-// ============ INSURER DOMAIN ============
+// ============ HEALTHCARE DECISION-MAKER ============
 
-model Insurer {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id])
-  companyName     String
-  agentName       String?
-  createdAt       DateTime  @default(now())
+model HealthcareDecisionMaker {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  relationship    String   // e.g., "Sister", "Brother", "Spouse", "POA"
+  permissionLevel String   @default("FULL_ACCESS") // FULL_ACCESS, EMERGENCY_ONLY, VIEW_ONLY
+  phone           String?
+  email           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // ============ MEDICAL TOURISM CLINIC DOMAIN ============
@@ -430,7 +437,7 @@ model ClinicPatient {
   patient         Patient   @relation(fields: [patientId], references: [id])
   intakeCode      String?
   importedAt      DateTime  @default(now())
-  status          String    @default("IMPORTED") // IMPORTED, REVIEWED, SCHEDULED, COMPLETED
+  status          String    @default("IMPORTED") // IMPORTED, ACTIVE, COMPLETED
   
   notes           ClinicNote[]
   
@@ -467,7 +474,7 @@ model AuditLog {
   patientId       String
   patient         Patient   @relation(fields: [patientId], references: [id])
   
-  actorType       String    // PATIENT, CLINICIAN, INSURER, CLINIC_STAFF, EMERGENCY_ACCESS, SYSTEM
+  actorType       String    // PATIENT, CLINICIAN, CLINIC_STAFF, EMERGENCY_ACCESS, SYSTEM
   actorId         String?
   actorName       String?
   actorInstitution String?
