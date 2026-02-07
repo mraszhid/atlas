@@ -1,241 +1,286 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import prisma from '@/lib/prisma'
+'use client'
+
 import Link from 'next/link'
-import { 
-  Users, 
-  FileEdit, 
-  Clock,
-  ArrowRight,
+import {
+  Users,
+  UserPlus,
   CheckCircle2,
+  Clock,
+  FileEdit,
+  Download,
+  GitBranch,
+  BarChart3,
+  ArrowRight,
+  TrendingDown,
+  Activity,
+  Eye,
   FileText,
-  Building2,
-  TrendingUp,
-  Calendar,
-  AlertCircle
+  Send,
 } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
 
-export default async function ClinicDashboard() {
-  const session = await getSession()
-  if (!session || (session.role !== 'CLINIC_ADMIN' && session.role !== 'CLINIC_STAFF')) {
-    redirect('/login')
-  }
+const stats = [
+  {
+    label: 'Active Patients',
+    value: '47',
+    icon: Users,
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+  },
+  {
+    label: 'This Month',
+    value: '12',
+    subtext: 'new patients',
+    icon: UserPlus,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+  },
+  {
+    label: 'Completed Procedures',
+    value: '9',
+    icon: CheckCircle2,
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-600',
+  },
+  {
+    label: 'Avg Intake Time',
+    value: '42 min',
+    icon: Clock,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    badge: { text: 'Down from 2.5 hrs', color: 'bg-emerald-100 text-emerald-700' },
+  },
+]
 
-  const clinicStaff = await prisma.clinicStaff.findUnique({
-    where: { userId: session.id },
-    include: { 
-      clinic: {
-        include: {
-          intakeForms: { orderBy: { createdAt: 'desc' } },
-          clinicPatients: {
-            include: { 
-              patient: true,
-              notes: {
-                include: { staff: true },
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-              },
-            },
-            orderBy: { importedAt: 'desc' },
-            take: 10,
-          },
-        },
-      },
-    },
-  })
+const quickActions = [
+  {
+    label: 'Create New Form',
+    description: 'Build intake forms for patients',
+    href: '/clinic/forms',
+    icon: FileEdit,
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-600',
+  },
+  {
+    label: 'Import Patient',
+    description: 'Add patients from ATLAS',
+    href: '/clinic/patients',
+    icon: Download,
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+  },
+  {
+    label: 'View Pipeline',
+    description: 'Track patient journey stages',
+    href: '/clinic/pipeline',
+    icon: GitBranch,
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+  },
+  {
+    label: 'View Analytics',
+    description: 'Clinic performance metrics',
+    href: '/clinic/analytics',
+    icon: BarChart3,
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+  },
+]
 
-  if (!clinicStaff) redirect('/login')
+const recentActivity = [
+  {
+    id: '1',
+    action: 'Muhammad Al-Rashid completed intake form',
+    type: 'form',
+    icon: CheckCircle2,
+    iconColor: 'text-emerald-500',
+    time: '15 minutes ago',
+  },
+  {
+    id: '2',
+    action: 'Sarah Johnson imported from ATLAS',
+    type: 'import',
+    icon: Download,
+    iconColor: 'text-blue-500',
+    time: '1 hour ago',
+  },
+  {
+    id: '3',
+    action: 'Cosmetic Surgery Pre-Op form shared',
+    type: 'share',
+    icon: Send,
+    iconColor: 'text-violet-500',
+    time: '2 hours ago',
+  },
+  {
+    id: '4',
+    action: 'Lisa Wong procedure marked complete',
+    type: 'complete',
+    icon: CheckCircle2,
+    iconColor: 'text-emerald-500',
+    time: '4 hours ago',
+  },
+  {
+    id: '5',
+    action: 'Orthopedic Surgery Pre-Op published',
+    type: 'publish',
+    icon: FileText,
+    iconColor: 'text-violet-500',
+    time: 'Yesterday',
+  },
+]
 
-  const clinic = clinicStaff.clinic
-  const totalPatients = clinic.clinicPatients.length
-  const activePatients = clinic.clinicPatients.filter(cp => cp.status === 'ACTIVE').length
-  const pendingPatients = clinic.clinicPatients.filter(cp => cp.status === 'PENDING').length
-  const totalForms = clinic.intakeForms.length
-  const publishedForms = clinic.intakeForms.filter(f => f.isPublished).length
-
+export default function ClinicDashboard() {
   return (
-    <div className="p-8">
-      {/* Header */}
+    <div className="p-6 lg:p-8">
+      {/* Hero Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Clinic Dashboard 🏥
-            </h1>
-            <p className="text-slate-500">
-              {clinic.name} • {clinic.city}, {clinic.country}
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          NovaMed Tourism Clinic Operations Hub
+        </h1>
+        <p className="text-slate-500">
+          Monitor patient intake, manage forms, and track clinic performance
+        </p>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="stat-card">
+            <div className={`icon-box ${stat.iconBg}`}>
+              <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+            </div>
+            <p className="value">{stat.value}</p>
+            <p className="stat-label">
+              {stat.label}
+              {stat.subtext && <span className="text-slate-400 ml-1">({stat.subtext})</span>}
             </p>
+            {stat.badge && (
+              <span className={`inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${stat.badge.color}`}>
+                <TrendingDown className="w-3 h-3" />
+                {stat.badge.text}
+              </span>
+            )}
           </div>
-          <Link href="/clinic/forms" className="btn-primary">
-            <FileEdit className="w-5 h-5" />
-            Manage Forms
-          </Link>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action) => (
+            <Link key={action.label} href={action.href} className="quick-action">
+              <div className={`icon-box ${action.iconBg}`}>
+                <action.icon className={`w-5 h-5 ${action.iconColor}`} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-slate-900">{action.label}</p>
+                <p className="text-sm text-slate-500">{action.description}</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400" />
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="stat-card">
-          <div className="icon-box bg-blue-100">
-            <Users className="w-6 h-6 text-blue-600" />
-          </div>
-          <p className="value">{totalPatients}</p>
-          <p className="stat-label">Total Patients</p>
-        </div>
-        
-        <div className="stat-card">
-          <div className="icon-box bg-emerald-100">
-            <CheckCircle2 className="w-6 h-6 text-emerald-600" />
-          </div>
-          <p className="value">{activePatients}</p>
-          <p className="stat-label">Active Cases</p>
-        </div>
-        
-        <div className="stat-card">
-          <div className="icon-box bg-amber-100">
-            <Clock className="w-6 h-6 text-amber-600" />
-          </div>
-          <p className="value">{pendingPatients}</p>
-          <p className="stat-label">Pending Intake</p>
-        </div>
-        
-        <div className="stat-card">
-          <div className="icon-box bg-violet-100">
-            <FileText className="w-6 h-6 text-violet-600" />
-          </div>
-          <p className="value">{publishedForms}/{totalForms}</p>
-          <p className="stat-label">Published Forms</p>
-        </div>
-      </div>
-
+      {/* Recent Activity */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Patient List */}
         <div className="lg:col-span-2 card-premium p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-slate-900">Recent Patients</h2>
-            <Link href="/clinic/patients" className="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1">
+            <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
+            <Link
+              href="/clinic/submissions"
+              className="text-sm text-violet-600 hover:text-violet-700 font-medium flex items-center gap-1"
+            >
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          
-          {clinic.clinicPatients.length > 0 ? (
-            <div className="space-y-3">
-              {clinic.clinicPatients.map((cp) => (
-                <div 
-                  key={cp.id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                      {cp.patient.fullName.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-900">{cp.patient.fullName}</p>
-                      <p className="text-sm text-slate-500">{cp.patient.nationality}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`badge ${
-                      cp.status === 'ACTIVE' ? 'badge-verified' : 
-                      cp.status === 'COMPLETED' ? 'badge-info' : 
-                      'badge-gold'
-                    }`}>
-                      {cp.status === 'ACTIVE' && <CheckCircle2 className="w-3 h-3" />}
-                      {cp.status === 'PENDING' && <Clock className="w-3 h-3" />}
-                      {cp.status}
-                    </span>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {formatDate(cp.importedAt)}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            {recentActivity.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <item.icon className={`w-5 h-5 ${item.iconColor}`} />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500">No patients imported yet</p>
-              <p className="text-sm text-slate-400 mt-1">Share your intake form to start receiving patients</p>
-            </div>
-          )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900">{item.action}</p>
+                  <p className="text-xs text-slate-500">{item.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar Stats */}
         <div className="space-y-6">
-          {/* Quick Actions */}
-          <div className="card-premium p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <Link href="/clinic/forms" className="quick-action">
-                <div className="icon-box bg-violet-100">
-                  <FileEdit className="w-5 h-5 text-violet-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">Create Form</p>
-                  <p className="text-sm text-slate-500">Build intake forms</p>
-                </div>
-              </Link>
-              
-              <Link href="/clinic/import" className="quick-action">
-                <div className="icon-box bg-blue-100">
-                  <Users className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">Import Patient</p>
-                  <p className="text-sm text-slate-500">Add from ATLAS</p>
-                </div>
-              </Link>
-            </div>
-          </div>
-
-          {/* Intake Forms */}
-          <div className="card-premium p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Intake Forms</h2>
-            </div>
-            
-            {clinic.intakeForms.length > 0 ? (
-              <div className="space-y-3">
-                {clinic.intakeForms.slice(0, 3).map((form) => (
-                  <div key={form.id} className="p-3 bg-slate-50 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-slate-900 text-sm">{form.name}</p>
-                      <span className={`badge ${form.isPublished ? 'badge-verified' : 'badge-unverified'}`}>
-                        {form.isPublished ? 'Live' : 'Draft'}
-                      </span>
-                    </div>
-                    {form.isPublished && form.shareToken && (
-                      <p className="text-xs text-slate-500 font-mono truncate">
-                        /intake/{form.shareToken}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No forms created</p>
-              </div>
-            )}
-          </div>
-
-          {/* Clinic Info */}
+          {/* Clinic Summary */}
           <div className="card-premium p-6 bg-gradient-to-br from-violet-50 to-purple-50">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+                <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="font-semibold text-slate-900">{clinic.name}</p>
-                <p className="text-sm text-slate-500">{clinic.specialty}</p>
+                <p className="font-semibold text-slate-900">Clinic Performance</p>
+                <p className="text-sm text-slate-500">This month</p>
               </div>
             </div>
-            <div className="text-sm text-slate-600 space-y-1">
-              <p>📍 {clinic.address}</p>
-              <p>📞 {clinic.phone}</p>
-              <p>✉️ {clinic.email}</p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Intake Completion</span>
+                <span className="font-semibold text-slate-900">94%</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: '94%' }} />
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Verification Rate</span>
+                <span className="font-semibold text-slate-900">91%</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: '91%' }} />
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-slate-600">Patient Satisfaction</span>
+                <span className="font-semibold text-slate-900">4.7/5</span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: '94%' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Published Forms Quick View */}
+          <div className="card-premium p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900">Active Forms</h3>
+              <Link href="/clinic/forms" className="text-sm text-violet-600 hover:text-violet-700 font-medium">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-slate-900">Cosmetic Surgery Pre-Op</p>
+                  <span className="badge badge-verified">Published</span>
+                </div>
+                <p className="text-xs text-slate-500">18 submissions</p>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-slate-900">Orthopedic Pre-Op</p>
+                  <span className="badge badge-verified">Published</span>
+                </div>
+                <p className="text-xs text-slate-500">8 submissions</p>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-slate-900">Dental Surgery Pre-Op</p>
+                  <span className="badge badge-unverified">Draft</span>
+                </div>
+                <p className="text-xs text-slate-500">Not published</p>
+              </div>
             </div>
           </div>
         </div>
